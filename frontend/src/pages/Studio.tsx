@@ -3,22 +3,36 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { ArtworkCard } from '../components/common/ArtworkCard';
 import { EmptyState } from '../components/common/EmptyState';
+import { ExhibitionCard } from '../components/common/ExhibitionCard';
 import { StatCard } from '../components/common/StatCard';
 import { TrendChart } from '../components/common/TrendChart';
 import { useArtistStore } from '../stores/artistStore';
 import { useArtworkStore } from '../stores/artworkStore';
-import { ArtworkStatus } from '../types/enums';
+import { useExhibitionStore } from '../stores/exhibitionStore';
+import { ArtworkStatus, ExhibitionStatus } from '../types/enums';
 
-const tabs = [ArtworkStatus.Draft, ArtworkStatus.Published, ArtworkStatus.Sold];
+const artworkTabs = [
+  { key: ArtworkStatus.Draft, label: '草稿' },
+  { key: ArtworkStatus.Published, label: '已发布' },
+  { key: ArtworkStatus.Sold, label: '已售出' },
+];
+
+const exhibitionTabs = [
+  { key: ExhibitionStatus.Planning, label: '策划中' },
+  { key: ExhibitionStatus.Active, label: '进行中' },
+  { key: ExhibitionStatus.Ended, label: '已结束' },
+  { key: ExhibitionStatus.Archived, label: '已归档' },
+];
 
 export function Studio() {
   const [draftTitle, setDraftTitle] = useState('');
   const { artworks, loadArtworks } = useArtworkStore();
   const { artists, loadArtists } = useArtistStore();
+  const { exhibitions, loadExhibitions, publishExhibition, endExhibition, archiveExhibition } = useExhibitionStore();
 
   useEffect(() => {
-    void Promise.all([loadArtworks(), loadArtists()]);
-  }, [loadArtworks, loadArtists]);
+    void Promise.all([loadArtworks(), loadArtists(), loadExhibitions()]);
+  }, [loadArtworks, loadArtists, loadExhibitions]);
 
   const totals = useMemo(() => ({
     views: artworks.reduce((sum, item) => sum + item.views, 0),
@@ -51,25 +65,68 @@ export function Studio() {
         </section>
         <Tab.Group>
           <Tab.List className="mt-10 flex gap-2 border-b border-ink/15">
-            {tabs.map((tab) => (
-              <Tab key={tab} className={({ selected }) => `px-5 py-3 text-sm outline-none ${selected ? 'bg-ink text-rice' : 'text-ink/65 hover:text-ink'}`}>{tab}</Tab>
-            ))}
+            <Tab className={({ selected }) => `px-5 py-3 text-sm outline-none ${selected ? 'bg-ink text-rice' : 'text-ink/65 hover:text-ink'}`}>作品管理</Tab>
+            <Tab className={({ selected }) => `px-5 py-3 text-sm outline-none ${selected ? 'bg-ink text-rice' : 'text-ink/65 hover:text-ink'}`}>展览管理</Tab>
           </Tab.List>
           <Tab.Panels className="mt-6">
-            {tabs.map((tab) => {
-              const list = artworks.filter((artwork) => artwork.status === tab);
-              return (
-                <Tab.Panel key={tab}>
-                  {list.length ? (
-                    <div className="grid gap-5 md:grid-cols-3">
-                      {list.map((artwork) => <ArtworkCard key={artwork.id} artwork={artwork} artist={artist} compact />)}
-                    </div>
-                  ) : (
-                    <EmptyState title={`${tab} 列表为空`} description="状态变化后作品会自动进入对应队列。" />
-                  )}
-                </Tab.Panel>
-              );
-            })}
+            <Tab.Panel>
+              <Tab.Group>
+                <Tab.List className="flex gap-2 border-b border-ink/10">
+                {artworkTabs.map((tab) => (
+                  <Tab key={tab.key} className={({ selected }) => `px-4 py-2 text-sm outline-none ${selected ? 'border-b-2 border-clay text-ink' : 'text-ink/55 hover:text-ink'}`}>{tab.label}</Tab>
+                ))}
+                </Tab.List>
+                <Tab.Panels className="mt-6">
+                  {artworkTabs.map((tab) => {
+                    const list = artworks.filter((artwork) => artwork.status === tab.key);
+                    return (
+                      <Tab.Panel key={tab.key}>
+                        {list.length ? (
+                          <div className="grid gap-5 md:grid-cols-3">
+                            {list.map((artwork) => <ArtworkCard key={artwork.id} artwork={artwork} artist={artist} compact />)}
+                          </div>
+                        ) : (
+                          <EmptyState title={`${tab.label} 列表为空`} description="状态变化后作品会自动进入对应队列。" />
+                        )}
+                      </Tab.Panel>
+                    );
+                  })}
+                </Tab.Panels>
+              </Tab.Group>
+            </Tab.Panel>
+            <Tab.Panel>
+              <Tab.Group>
+                <Tab.List className="flex gap-2 border-b border-ink/10">
+                  {exhibitionTabs.map((tab) => (
+                    <Tab key={tab.key} className={({ selected }) => `px-4 py-2 text-sm outline-none ${selected ? 'border-b-2 border-clay text-ink' : 'text-ink/55 hover:text-ink'}`}>{tab.label}</Tab>
+                  ))}
+                </Tab.List>
+                <Tab.Panels className="mt-6">
+                  {exhibitionTabs.map((tab) => {
+                    const list = exhibitions.filter((exhibition) => exhibition.status === tab.key);
+                    return (
+                      <Tab.Panel key={tab.key}>
+                        {list.length ? (
+                          <div className="grid gap-5 md:grid-cols-3">
+                            {list.map((exhibition) => (
+                              <ExhibitionCard
+                                key={exhibition.id}
+                                exhibition={exhibition}
+                                onPublish={(id) => void publishExhibition(id)}
+                                onEnd={(id) => void endExhibition(id)}
+                                onArchive={(id) => void archiveExhibition(id)}
+                              />
+                            ))}
+                          </div>
+                        ) : (
+                            <EmptyState title={`${tab.label} 展览为空`} description="创建新展览或调整状态后会出现在这里。" />
+                        )}
+                      </Tab.Panel>
+                    );
+                  })}
+                </Tab.Panels>
+              </Tab.Group>
+            </Tab.Panel>
           </Tab.Panels>
         </Tab.Group>
       </div>

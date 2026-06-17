@@ -8,6 +8,7 @@ import { usePagination } from '../hooks/usePagination';
 import { useArtistStore } from '../stores/artistStore';
 import { useArtworkStore } from '../stores/artworkStore';
 import { useExhibitionStore } from '../stores/exhibitionStore';
+import { ExhibitionStatus } from '../types/enums';
 
 export function Gallery() {
   const { artworks, loadArtworks } = useArtworkStore();
@@ -19,7 +20,8 @@ export function Gallery() {
     void Promise.all([loadArtworks(), loadArtists(), loadExhibitions()]);
   }, [loadArtworks, loadArtists, loadExhibitions]);
 
-  const featured = exhibitions[0];
+  const activeExhibitions = exhibitions.filter((exhibition) => exhibition.status === ExhibitionStatus.Active);
+  const featured = activeExhibitions[0];
   const findArtist = (id: string) => artists.find((artist) => artist.id === id);
 
   return (
@@ -28,6 +30,7 @@ export function Gallery() {
         <Link to="/gallery" className="font-display text-2xl">Atelier Index</Link>
         <nav className="flex gap-5 text-sm text-ink/70">
           <Link to="/gallery">画廊</Link>
+          <Link to="/exhibitions/history">历史回顾</Link>
           <Link to="/studio">工作台</Link>
         </nav>
       </header>
@@ -37,9 +40,22 @@ export function Gallery() {
             <p className="text-sm uppercase tracking-[0.25em] text-clay">Independent gallery system</p>
             <h1 className="mt-4 font-display text-6xl leading-[0.95] text-ink md:text-7xl">作品、展览与观众互动在同一个现场。</h1>
             <p className="mt-6 max-w-xl text-lg leading-8 text-ink/70">为独立艺术家和小型画廊准备的管理平台：从作品发布、展览策划到点赞评论，都保持在可审核、可追踪的工作流里。</p>
+            <Link to="/exhibitions/history" className="mt-6 inline-block text-sm font-semibold text-clay hover:underline">
+              查看历史展览 →
+            </Link>
           </div>
-          {featured ? <ExhibitionBanner exhibition={featured} large /> : <EmptyState title="暂无展览" description="创建第一个展览后会出现在这里。" />}
+          {featured ? <ExhibitionBanner exhibition={featured} large /> : <EmptyState title="暂无进行中的展览" description="新展览发布后会出现在这里。" />}
         </div>
+        {activeExhibitions.length > 1 && (
+          <section className="mt-14">
+            <h2 className="font-display text-4xl">更多展览</h2>
+            <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              {activeExhibitions.slice(1).map((exhibition) => (
+                <ExhibitionBanner key={exhibition.id} exhibition={exhibition} />
+              ))}
+            </div>
+          </section>
+        )}
         <div className="mt-14 grid gap-8 lg:grid-cols-[1fr_280px]">
           <section>
             <div className="mb-5 flex items-end justify-between">

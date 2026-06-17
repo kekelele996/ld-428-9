@@ -28,4 +28,17 @@ export class ExhibitionService {
   async publish(id: string) {
     return this.exhibitionModel.findByIdAndUpdate(id, { status: ExhibitionStatus.Active }, { new: true });
   }
+
+  async end(id: string) {
+    return this.exhibitionModel.findByIdAndUpdate(id, { status: ExhibitionStatus.Ended }, { new: true });
+  }
+
+  async archive(id: string) {
+    return this.exhibitionModel.findByIdAndUpdate(id, { status: ExhibitionStatus.Archived }, { new: true });
+  }
+
+  async listByStatus(status?: ExhibitionStatus) {
+    const filter = status ? { status } : {};
+    return this.exhibitionModel.find(filter).sort({ startDate: -1 }).lean();
+  }
 }

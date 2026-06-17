@@ -113,6 +113,32 @@ export const exhibitions: Exhibition[] = [
     status: ExhibitionStatus.Planning,
     visitors: 0,
   },
+  {
+    id: 'exh-003',
+    title: '夜色与光',
+    description: '陈序摄影个展，探索城市边缘的夜间灯光景观。',
+    curatorId: 'artist-chen',
+    startDate: '2025-11-01',
+    endDate: '2026-01-15',
+    type: ExhibitionType.Solo,
+    coverUrl: 'https://images.unsplash.com/photo-1519608487953-e999c86e7455?auto=format&fit=crop&w=1400&q=80',
+    artworkIds: ['art-002'],
+    status: ExhibitionStatus.Ended,
+    visitors: 8920,
+  },
+  {
+    id: 'exh-004',
+    title: '纸本千年',
+    description: '传统东方纸本艺术的当代表达群展。',
+    curatorId: 'artist-lin',
+    startDate: '2025-03-15',
+    endDate: '2025-06-30',
+    type: ExhibitionType.Group,
+    coverUrl: 'https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?auto=format&fit=crop&w=1400&q=80',
+    artworkIds: ['art-001'],
+    status: ExhibitionStatus.Archived,
+    visitors: 15600,
+  },
 ];
 
 export const interactions: Interaction[] = [
